@@ -13,7 +13,7 @@
             <tabs>
                 <Tab fx:id="tab0" text="Home">
                     <content>
-                        <AnchorPane id="tab0" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                        <fx:include source="empty.fxml"/>
                     </content>
                 </Tab>
                 <Tab fx:id="tabAdd" closable="false" text="+">        
@@ -21,18 +21,18 @@
             </tabs>
         </TabPane>
     </center>
-   <top>
-      <HBox prefHeight="26.0" prefWidth="694.0" spacing="2.0" BorderPane.alignment="CENTER">
-         <children>
+    <top>
+        <HBox prefHeight="26.0" prefWidth="694.0" spacing="2.0" BorderPane.alignment="CENTER">
+            <children>
                 <TextField fx:id="txtAddress" prefHeight="25.0" prefWidth="457.0" text="http://localhost:7070/fxserver/Scene.fxml" HBox.hgrow="ALWAYS" />
                 <Button fx:id="btnGo" mnemonicParsing="false" onAction="#go" text="Button" />
-         </children>
-         <BorderPane.margin>
-            <Insets />
-         </BorderPane.margin>
-         <padding>
-            <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
-         </padding>
-      </HBox>
-   </top>
+            </children>
+            <BorderPane.margin>
+                <Insets />
+            </BorderPane.margin>
+            <padding>
+                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+            </padding>
+        </HBox>
+    </top>
 </BorderPane>

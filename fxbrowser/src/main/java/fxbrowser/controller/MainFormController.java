@@ -1,6 +1,7 @@
 package fxbrowser.controller;
 
 import fxbrowser.HTTPClassLoader;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
@@ -10,7 +11,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 
-import javafx.scene.Parent;
+import javafx.scene.Node;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
@@ -19,7 +20,6 @@ import javafx.scene.control.TextField;
 
 import java.io.IOException;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import java.util.ResourceBundle;
@@ -71,17 +71,25 @@ public class MainFormController implements Initializable
 
             loader.setClassLoader(new HTTPClassLoader(FXMLLoader.getDefaultClassLoader(), url));
             loader.setLocation(url);
-            Parent root = loader.load();
+            Node node = loader.load();
 
-            tabPane.getSelectionModel().getSelectedItem().setContent(root);
+            tabPane.getSelectionModel().getSelectedItem().setContent(node);
         }
-        catch (MalformedURLException ex)
+        catch (Exception ex)
         {
-            Logger.getLogger(MainFormController.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        catch (IOException ex)
-        {
-            Logger.getLogger(MainFormController.class.getName()).log(Level.SEVERE, null, ex);
+            try
+            {
+                FXMLLoader fxmlLoader = new FXMLLoader();
+                Node node = fxmlLoader.load(getClass().getResourceAsStream("/fxml/error.fxml"));
+                ErrorController controller = (ErrorController) fxmlLoader.getController();
+
+                controller.setException(ex);
+                tabPane.getSelectionModel().getSelectedItem().setContent(node);
+            }
+            catch (IOException ex1)
+            {
+                Logger.getLogger(MainFormController.class.getName()).log(Level.SEVERE, null, ex1);
+            }
         }
     }
 }
