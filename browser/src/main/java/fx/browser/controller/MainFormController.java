@@ -1,6 +1,9 @@
 package fx.browser.controller;
 
+import fx.browser.Browser;
 import fx.browser.HTTPClassLoader;
+
+import fx.browser.dialog.LoginDialog;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -18,18 +21,24 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 
+import javafx.util.Pair;
+
 import org.apache.http.Header;
 import org.apache.http.HttpStatus;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,13 +68,11 @@ public class MainFormController implements Initializable
                 {
                     if (newValue == tabAdd)
                     {
-                        tabPane.getTabs().remove(tabAdd);
                         Tab newTab = new Tab("New Tab");
 
                         newTab.setClosable(true);
-                        tabPane.getTabs().add(new Tab("New Tab"));
-                        tabPane.getSelectionModel().select(newTab);
-                        tabPane.getTabs().add(tabAdd);
+                        tabPane.getTabs().add(tabPane.getTabs().size() - 1, new Tab("New Tab"));
+                        tabPane.getSelectionModel().select(tabPane.getTabs().size() - 2);
                     }
                 }
             });
@@ -73,32 +80,52 @@ public class MainFormController implements Initializable
 
     private Node getNode(URL url) throws URISyntaxException, IOException
     {
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        CloseableHttpResponse response = null;
         HttpGet httpGet = new HttpGet(url.toURI());
+        CloseableHttpResponse response = Browser.getHttpClient().execute(httpGet);
 
-        response = httpClient.execute(httpGet);
-        if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK)
+        switch (response.getStatusLine().getStatusCode())
         {
-            Header header = response.getFirstHeader("class-loader-url");
 
-            if (header == null)
-            {
-                throw new IOException("class-loader-url header is missing!");
-            }
+            case HttpStatus.SC_OK:
+                Header header = response.getFirstHeader("class-loader-url");
 
-            URL clURL = new URL(url.getProtocol(), url.getHost(), url.getPort(), header.getValue());
+                if (header == null)
+                {
+                    throw new IOException("class-loader-url header is missing!");
+                }
 
-            if (logger.isLoggable(Level.INFO))
-            {
-                logger.log(Level.INFO, "Class loder URL: {0}", clURL);
-            }
+                URL clURL = new URL(url.getProtocol(), url.getHost(), url.getPort(), header.getValue());
 
-            FXMLLoader loader = new FXMLLoader();
+                if (logger.isLoggable(Level.INFO))
+                {
+                    logger.log(Level.INFO, "Class loder URL: {0}", clURL);
+                }
 
-            loader.setClassLoader(new HTTPClassLoader(FXMLLoader.getDefaultClassLoader(), clURL));
+                ByteArrayOutputStream buffer = new ByteArrayOutputStream((int) response.getEntity().getContentLength());
 
-            return loader.load(response.getEntity().getContent());
+                response.getEntity().writeTo(buffer);
+                EntityUtils.consume(response.getEntity());
+                httpGet.reset();
+                FXMLLoader loader = new FXMLLoader();
+
+                loader.setClassLoader(new HTTPClassLoader(FXMLLoader.getDefaultClassLoader(), clURL));
+                Node node = loader.load(new ByteArrayInputStream(buffer.toByteArray()));
+
+                return node;
+
+            case HttpStatus.SC_UNAUTHORIZED:
+                httpGet.reset();
+                Optional<Pair<String, String>> result = new LoginDialog().showAndWait();
+
+                if (result.isPresent())
+                {
+                    Browser.getCredentialsProvider().setCredentials(new AuthScope(url.getHost(), url.getPort()),
+                        new UsernamePasswordCredentials(result.get().getKey(), result.get().getValue()));
+
+                    return getNode(url);
+                }
+
+                return null;
         }
 
         throw new IOException(response.getStatusLine().toString());
@@ -117,7 +144,7 @@ public class MainFormController implements Initializable
             try
             {
                 FXMLLoader fxmlLoader = new FXMLLoader();
-                Node node = fxmlLoader.load(getClass().getResourceAsStream("/fx/browser/fxml/error.fxml"));
+                Node node = fxmlLoader.load(getClass().getResourceAsStream("/fxml/error.fxml"));
                 ErrorController controller = (ErrorController) fxmlLoader.getController();
 
                 controller.setException(ex);

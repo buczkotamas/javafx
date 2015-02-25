@@ -4,8 +4,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -49,9 +48,6 @@ public class HTTPClassLoader extends ClassLoader
             return result;
         }
 
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        CloseableHttpResponse response = null;
-
         try
         {
             URI uri = new URI(url.toString() + "?class=" + name);
@@ -62,14 +58,21 @@ public class HTTPClassLoader extends ClassLoader
             }
 
             HttpGet httpGet = new HttpGet(uri);
+            CloseableHttpResponse response = Browser.getHttpClient().execute(httpGet);
 
-            response = httpClient.execute(httpGet);
             if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK)
             {
+                if (logger.isLoggable(Level.INFO))
+                {
+                    logger.log(Level.INFO, "Class loaded from server: {0}", name);
+                }
+
                 HttpEntity entity = response.getEntity();
                 ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 
                 entity.writeTo(byteStream);
+                EntityUtils.consume(response.getEntity());
+                httpGet.reset();
                 byte[] bytes = byteStream.toByteArray();
 
                 result = defineClass(name, bytes, 0, bytes.length, null);
@@ -80,35 +83,18 @@ public class HTTPClassLoader extends ClassLoader
             }
             else
             {
+                if (logger.isLoggable(Level.INFO))
+                {
+                    logger.log(Level.INFO, "Class can't loaded from server: {0}", name);
+                }
+
+                httpGet.reset();
                 throw new ClassNotFoundException(response.getStatusLine().toString());
             }
         }
         catch (IOException | URISyntaxException ioe)
         {
             throw new ClassNotFoundException(ioe.getMessage(), ioe);
-        }
-        finally
-        {
-            try
-            {
-                if (response != null)
-                {
-                    response.close();
-                }
-            }
-            catch (IOException ex)
-            {
-                logger.log(Level.SEVERE, null, ex);
-            }
-
-            try
-            {
-                httpClient.close();
-            }
-            catch (IOException ex)
-            {
-                logger.log(Level.SEVERE, null, ex);
-            }
         }
     }
 
