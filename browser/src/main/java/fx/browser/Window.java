@@ -5,10 +5,29 @@
  */
 package fx.browser;
 
+import java.net.URL;
+
 /**
  *
  * @author tbuczko
  */
-public class Window {
-    
+public class Window
+{
+    History history;
+    URL location;
+
+    public History getHistory()
+    {
+        return history;
+    }
+
+    public URL getLocation()
+    {
+        return location;
+    }
+
+    public void setLocation(URL location)
+    {
+        this.location = location;
+    }
 }

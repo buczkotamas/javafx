@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.effect.*?>
 <?import javafx.geometry.*?>
 <?import java.lang.*?>
 <?import java.util.*?>
@@ -21,14 +22,36 @@
             </tabs>
         </TabPane>
     </center>
+   <bottom>
+      <HBox prefHeight="22.0" prefWidth="694.0" BorderPane.alignment="CENTER">
+         <children>
+            <ProgressBar prefWidth="200.0" progress="0.0" />
+         </children>
+      </HBox>
+   </bottom>
    <top>
-      <ToolBar prefHeight="16.0" prefWidth="694.0" BorderPane.alignment="CENTER">
-        <items>
-          <Button fx:id="btnBack" mnemonicParsing="false" prefHeight="25.0" prefWidth="8.0" text="&lt;" />
-            <Button fx:id="btnNext" mnemonicParsing="false" text="&gt;" />
-                <TextField fx:id="txtAddress" onAction="#go" text="http://localhost:7070/fx/server/Scene.fxml" />
-                <Button fx:id="btnGo" mnemonicParsing="false" onAction="#go" text="\@" />
-        </items>
-      </ToolBar>
+      <VBox prefHeight="41.0" prefWidth="694.0" BorderPane.alignment="CENTER">
+         <children>
+            <ToolBar prefHeight="16.0" prefWidth="694.0">
+              <items>
+                <Button fx:id="btnBack" mnemonicParsing="false" prefHeight="25.0" prefWidth="8.0" text="&lt;" />
+                  <Button fx:id="btnNext" mnemonicParsing="false" text="&gt;" />
+                      <TextField fx:id="txtAddress" onAction="#go" text="http://localhost:7070/fx/server/Scene.fxml" />
+                      <Button fx:id="btnGo" mnemonicParsing="false" onAction="#go" text="\@" />
+              </items>
+            </ToolBar>
+            <ToolBar prefHeight="40.0" prefWidth="200.0">
+              <items>
+                <Button mnemonicParsing="false" text="Button" />
+                  <MenuButton mnemonicParsing="false" text="MenuButton">
+                    <items>
+                      <MenuItem mnemonicParsing="false" text="Action 1" />
+                      <MenuItem mnemonicParsing="false" text="Action 2" />
+                    </items>
+                  </MenuButton>
+              </items>
+            </ToolBar>
+         </children>
+      </VBox>
    </top>
 </BorderPane>

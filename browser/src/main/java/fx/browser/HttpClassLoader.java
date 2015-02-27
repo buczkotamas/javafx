@@ -9,7 +9,9 @@ import java.io.ByteArrayOutputStream;
 
 import java.net.URL;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,6 +24,7 @@ public class HttpClassLoader extends ClassLoader
     private static final Logger logger = Logger.getLogger(HttpClassLoader.class.getName());
     private static final HashMap<URL, HttpClassLoader> loaders = new HashMap<>();
     private final HashMap<String, Class> classes = new HashMap<>();
+    private final List<String> notFound = new ArrayList<>();
     private final String urlWithQuery;
 
     private HttpClassLoader(URL url)
@@ -44,6 +47,11 @@ public class HttpClassLoader extends ClassLoader
 
     @Override public Class findClass(String name) throws ClassNotFoundException
     {
+        if (notFound.contains(name))
+        {
+            throw new ClassNotFoundException("Class already tried to be loaded from the server but response code was 404: " + name);
+        }
+
         Class result = classes.get(name);
 
         if (result != null)
@@ -86,6 +94,11 @@ public class HttpClassLoader extends ClassLoader
 
                     return result;
                 }
+
+                if (response.getStatusLine().getStatusCode() == HttpStatus.SC_NOT_FOUND)
+                {
+                    notFound.add(name);
+                }
             }
         }
         catch (Exception e)
@@ -100,7 +113,14 @@ public class HttpClassLoader extends ClassLoader
     {
         try
         {
-            return getParent().loadClass(name);
+            Class c = getParent().loadClass(name);
+
+            if (logger.isLoggable(Level.INFO))
+            {
+                logger.log(Level.INFO, "Class loaded by parent: {0}", name);
+            }
+
+            return c;
         }
         catch (ClassNotFoundException e)
         {
