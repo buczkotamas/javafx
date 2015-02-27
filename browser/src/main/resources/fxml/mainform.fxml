@@ -13,7 +13,7 @@
             <tabs>
                 <Tab fx:id="tab0" text="Home">
                     <content>
-                        <fx:include source="empty.fxml"/>
+                        <fx:include source="empty.fxml" />
                     </content>
                 </Tab>
                 <Tab fx:id="tabAdd" closable="false" text="+">        
@@ -21,18 +21,14 @@
             </tabs>
         </TabPane>
     </center>
-    <top>
-        <HBox prefHeight="26.0" prefWidth="694.0" spacing="2.0" BorderPane.alignment="CENTER">
-            <children>
-                <TextField fx:id="txtAddress" prefHeight="25.0" prefWidth="457.0" text="http://localhost:7070/fx/server/Scene.fxml" HBox.hgrow="ALWAYS" />
-                <Button fx:id="btnGo" mnemonicParsing="false" onAction="#go" text="Button" />
-            </children>
-            <BorderPane.margin>
-                <Insets />
-            </BorderPane.margin>
-            <padding>
-                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
-            </padding>
-        </HBox>
-    </top>
+   <top>
+      <ToolBar prefHeight="16.0" prefWidth="694.0" BorderPane.alignment="CENTER">
+        <items>
+          <Button fx:id="btnBack" mnemonicParsing="false" prefHeight="25.0" prefWidth="8.0" text="&lt;" />
+            <Button fx:id="btnNext" mnemonicParsing="false" text="&gt;" />
+                <TextField fx:id="txtAddress" onAction="#go" text="http://localhost:7070/fx/server/Scene.fxml" />
+                <Button fx:id="btnGo" mnemonicParsing="false" onAction="#go" text="\@" />
+        </items>
+      </ToolBar>
+   </top>
 </BorderPane>

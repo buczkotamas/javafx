@@ -212,6 +212,7 @@ public class ClassLoaderFilter implements Filter
 
         httpResponse.addHeader("class-loader-url",
             httpRequest.getServletContext().getContextPath() + filterConfig.getInitParameter("class-loder-url"));
+//        httpResponse.addHeader("context-path", httpRequest.getServletContext().getContextPath());
     }
 
     private void sendProcessingError(Throwable t, ServletResponse response)
