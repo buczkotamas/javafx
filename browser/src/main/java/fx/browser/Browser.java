@@ -2,8 +2,6 @@ package fx.browser;
 
 import javafx.application.Application;
 
-import static javafx.application.Application.launch;
-
 import javafx.fxml.FXMLLoader;
 
 import javafx.scene.Parent;
@@ -16,10 +14,16 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
+//import org.apache.webbeans.config.WebBeansContext;
+//import org.apache.webbeans.spi.ContainerLifecycle;
+//
+//import javax.enterprise.inject.spi.Bean;
+//import javax.enterprise.inject.spi.BeanManager;
 public class Browser extends Application
 {
     private static final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
     private static final CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
+    //private static ContainerLifecycle lifecycle = null;
 
     public static CredentialsProvider getCredentialsProvider()
     {
@@ -33,7 +37,7 @@ public class Browser extends Application
 
     public static void main(String[] args)
     {
-        launch(args);
+        Application.launch(args);
     }
 
     @Override public void start(Stage stage) throws Exception
@@ -44,5 +48,13 @@ public class Browser extends Application
         stage.setTitle("FXBrowser");
         stage.setScene(scene);
         stage.show();
+
+        /*
+        lifecycle = WebBeansContext.currentInstance().getService(ContainerLifecycle.class);
+        lifecycle.startApplication(null);
+        BeanManager beanManager = lifecycle.getBeanManager();
+        Bean<?> bean = beanManager.getBeans("browser").iterator().next();
+        Browser browser = (Browser) lifecycle.getBeanManager().getReference(bean, Browser.class, beanManager.createCreationalContext(bean));
+        */
     }
 }
