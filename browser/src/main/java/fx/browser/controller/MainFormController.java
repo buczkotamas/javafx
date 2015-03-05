@@ -1,9 +1,7 @@
 package fx.browser.controller;
 
-import fx.browser.Browser;
-import fx.browser.HttpClassLoader;
-
-import fx.browser.dialog.LoginDialog;
+import fx.browser.TabClassLoader;
+import fx.browser.WindowInterface;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -24,23 +22,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 
-import javafx.util.Pair;
-
-import org.apache.http.Header;
-import org.apache.http.HttpStatus;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import java.net.URISyntaxException;
 import java.net.URL;
 
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,79 +56,25 @@ public class MainFormController implements Initializable
                 {
                     if (newValue == tabAdd)
                     {
-                        Tab newTab = new Tab("New Tab");
+                        try
+                        {
+                            TabClassLoader tabClassLoader = new TabClassLoader();
+                            Class winClass = tabClassLoader.loadClass("fx.browser.Window");
 
-                        newTab.setClosable(true);
-                        tabPane.getTabs().add(tabPane.getTabs().size() - 1, new Tab("New Tab"));
-                        tabPane.getSelectionModel().select(tabPane.getTabs().size() - 2);
+                            System.out.println("Window.newInstance()");
+                            Tab newTab = (Tab) winClass.newInstance();
+
+                            newTab.setClosable(true);
+                            tabPane.getTabs().add(tabPane.getTabs().size() - 1, newTab);
+                            tabPane.getSelectionModel().select(tabPane.getTabs().size() - 2);
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                        }
                     }
                 }
             });
-    }
-
-    private Node getNode(URL url) throws URISyntaxException, IOException
-    {
-        HttpGet httpGet = new HttpGet(url.toURI());
-
-        try(CloseableHttpResponse response = Browser.getHttpClient().execute(httpGet))
-        {
-            switch (response.getStatusLine().getStatusCode())
-            {
-
-                case HttpStatus.SC_OK:
-                    FXMLLoader loader = new FXMLLoader();
-                    Header header = response.getFirstHeader("class-loader-url");
-
-                    if (header != null)
-                    {
-                        URL clURL = new URL(url.getProtocol(), url.getHost(), url.getPort(), header.getValue());
-
-                        if (logger.isLoggable(Level.INFO))
-                        {
-                            logger.log(Level.INFO, "Set up remote classloader: {0}", clURL);
-                        }
-
-                        loader.setClassLoader(HttpClassLoader.getInstance(clURL));
-                    }
-
-                    try
-                    {
-                        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-                        response.getEntity().writeTo(buffer);
-                        response.close();
-
-                        return loader.load(new ByteArrayInputStream(buffer.toByteArray()));
-                    }
-                    catch (Exception e)
-                    {
-                        response.close();
-                        logger.log(Level.INFO, e.toString(), e);
-                        Node node = loader.load(getClass().getResourceAsStream("/fxml/webview.fxml"));
-                        WebViewController controller = (WebViewController) loader.getController();
-
-                        controller.view(url);
-
-                        return node;
-                    }
-
-                case HttpStatus.SC_UNAUTHORIZED:
-                    response.close();
-                    Optional<Pair<String, String>> result = new LoginDialog().showAndWait();
-
-                    if (result.isPresent())
-                    {
-                        Browser.getCredentialsProvider().setCredentials(new AuthScope(url.getHost(), url.getPort()),
-                            new UsernamePasswordCredentials(result.get().getKey(), result.get().getValue()));
-
-                        return getNode(url);
-                    }
-
-                    return null;
-            }
-
-            throw new IOException(response.getStatusLine().toString());
-        }
     }
 
     @FXML private void go(ActionEvent event)
@@ -152,7 +83,7 @@ public class MainFormController implements Initializable
         {
             URL url = new URL(txtAddress.getText());
 
-            tabPane.getSelectionModel().getSelectedItem().setContent(getNode(url));
+            ((WindowInterface) tabPane.getSelectionModel().getSelectedItem()).setLocation(url);
         }
         catch (Exception ex)
         {

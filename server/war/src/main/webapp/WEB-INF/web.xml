@@ -25,7 +25,7 @@
             30
         </session-timeout>
     </session-config>
-    <security-constraint>
+<!--    <security-constraint>
         <web-resource-collection>
             <web-resource-name>Wildcard means whole app requires authentication</web-resource-name>
             <url-pattern>/*</url-pattern>
@@ -36,7 +36,7 @@
             <role-name>tomcat</role-name>
         </auth-constraint>
         <user-data-constraint>
-            <!-- transport-guarantee can be CONFIDENTIAL, INTEGRAL, or NONE -->
+             transport-guarantee can be CONFIDENTIAL, INTEGRAL, or NONE 
             <transport-guarantee>NONE</transport-guarantee>
         </user-data-constraint>
     </security-constraint>
@@ -46,5 +46,5 @@
     <security-role>
         <description/>
         <role-name>tomcat</role-name>
-    </security-role>
+    </security-role>-->
 </web-app>
