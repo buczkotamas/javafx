@@ -24,6 +24,6 @@ public class FXMLController implements Initializable
 
     @FXML private void handleButtonAction(ActionEvent event)
     {
-        label.setText(Window.uuid.toString());
+        label.setText("Window: " + Window.uuid.toString() + "\nWindow.classLoader.parent: " + Window.class.getClassLoader().getParent());
     }
 }

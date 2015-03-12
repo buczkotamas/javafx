@@ -36,8 +36,8 @@
               <items>
                 <Button fx:id="btnBack" mnemonicParsing="false" prefHeight="25.0" prefWidth="8.0" text="&lt;" />
                   <Button fx:id="btnNext" mnemonicParsing="false" text="&gt;" />
-                      <TextField fx:id="txtAddress" onAction="#go" text="http://localhost:7070/fx/server/Scene.fxml" />
-                      <Button fx:id="btnGo" mnemonicParsing="false" onAction="#go" text="\@" />
+                      <TextField fx:id="txtAddress" onAction="#setLocation" text="http://localhost:7070/fx/server/Scene.fxml" />
+                      <Button fx:id="btnGo" mnemonicParsing="false" onAction="#setLocation" text="\@" />
               </items>
             </ToolBar>
             <ToolBar prefHeight="40.0" prefWidth="200.0">

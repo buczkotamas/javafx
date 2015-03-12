@@ -9,9 +9,7 @@ import java.io.ByteArrayOutputStream;
 
 import java.net.URL;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,22 +21,28 @@ public class HttpClassLoader extends ClassLoader
 {
     private static final Logger logger = Logger.getLogger(HttpClassLoader.class.getName());
     private static final HashMap<URL, HttpClassLoader> loaders = new HashMap<>();
-    private final List<String> notFound = new ArrayList<>();
+
+    static
+    {
+        System.out.println("# New HttpClassLoader Class");
+    }
+
     private final String urlWithQuery;
 
-    private HttpClassLoader(URL url)
+    private HttpClassLoader(URL url, ClassLoader parent)
     {
+        super(parent);
         this.urlWithQuery = url.toString() + "?class=";
     }
 
-    public static HttpClassLoader getInstance(URL url)
+    public static HttpClassLoader getInstance(URL url, ClassLoader parent)
     {
         HttpClassLoader loader = loaders.get(url);
 
         if (loader == null)
         {
-            loader = new HttpClassLoader(url);
-            loaders.put(url, loader);
+            loader = new HttpClassLoader(url, parent);
+//            loaders.put(url, loader);
         }
 
         return loader;
@@ -46,29 +50,24 @@ public class HttpClassLoader extends ClassLoader
 
     @Override public Class findClass(String name) throws ClassNotFoundException
     {
+        System.out.println("# " + this.toString() + ".findClass(" + name + ")" + " this.Classloader: "
+              + getClass().getClassLoader().toString());
 
         //Do not try to load-define from prohibited packages, like java.*
         if ((name != null) && name.startsWith("java."))
         {
-            if (logger.isLoggable(Level.INFO))
-            {
-                logger.log(Level.INFO, "Prohibited package name: {0}", name);
-            }
 
+//            if (logger.isLoggable(Level.INFO))
+//            {
+//                logger.log(Level.INFO, "Prohibited package name: {0}", name);
+//            }
             throw new ClassNotFoundException("Prohibited package name: " + name);
         }
 
-        // response was 404, do not try again
-        if (notFound.contains(name))
-        {
-            throw new ClassNotFoundException("Class already tried to be loaded from the server but response code was 404: " + name);
-        }
-
-        if (logger.isLoggable(Level.INFO))
-        {
-            logger.log(Level.INFO, "Class not loaded yet, download from remote server: {0}", name);
-        }
-
+//        if (logger.isLoggable(Level.INFO))
+//        {
+//            logger.log(Level.INFO, "Class not loaded yet, download from remote server: {0}", name);
+//        }
         try
         {
             HttpGet httpGet = new HttpGet(urlWithQuery + name);
@@ -77,11 +76,11 @@ public class HttpClassLoader extends ClassLoader
             {
                 if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK)
                 {
-                    if (logger.isLoggable(Level.INFO))
-                    {
-                        logger.log(Level.INFO, "Class loaded from server: {0}", name);
-                    }
 
+//                    if (logger.isLoggable(Level.INFO))
+//                    {
+//                        logger.log(Level.INFO, "Class loaded from server: {0}", name);
+//                    }
                     HttpEntity entity = response.getEntity();
                     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
@@ -93,7 +92,7 @@ public class HttpClassLoader extends ClassLoader
 
                 if (response.getStatusLine().getStatusCode() == HttpStatus.SC_NOT_FOUND)
                 {
-                    notFound.add(name);
+                    ;
                 }
             }
         }

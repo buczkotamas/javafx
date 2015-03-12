@@ -28,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
@@ -40,39 +41,33 @@ import java.util.logging.Logger;
  *
  * @author tbuczko
  */
-public class Window extends Tab implements WindowInterface
+public class Window extends Tab
 {
     private static final Logger logger = Logger.getLogger(Window.class.getName());
     public static final UUID uuid = UUID.randomUUID();
-
-    static
-    {
-        System.out.println("### New Window class: " + uuid.toString());
-    }
-
-    History history;
-    URL location;
+    private History history;
+    private String location;
 
     public Window()
     {
         super("New Tab");
     }
 
-    @Override public History getHistory()
+    public History getHistory()
     {
         return history;
     }
 
-    @Override public URL getLocation()
+    public String getLocation()
     {
         return location;
     }
 
-    @Override public void setLocation(URL location) throws URISyntaxException
+    public void setLocation(String location) throws URISyntaxException
     {
-        System.out.println("# Window.classLoader: " + getClass().getClassLoader().toString());
+        System.out.println("# " + this.toString() + "-Classloader: " + getClass().getClassLoader().toString() + " setLocation()");
         this.location = location;
-        HttpGet httpGet = new HttpGet(location.toURI());
+        HttpGet httpGet = new HttpGet(new URI(location));
 
         try(CloseableHttpResponse response = Browser.getHttpClient().execute(httpGet))
         {
@@ -85,14 +80,15 @@ public class Window extends Tab implements WindowInterface
 
                     if (header != null)
                     {
-                        URL clURL = new URL(location.getProtocol(), location.getHost(), location.getPort(), header.getValue());
+                        URL url = new URL(location);
 
+                        url = new URL(url.getProtocol(), url.getHost(), url.getPort(), header.getValue());
                         if (logger.isLoggable(Level.INFO))
                         {
-                            logger.log(Level.INFO, "Set up remote classloader: {0}", clURL);
+                            logger.log(Level.INFO, "Set up remote classloader: {0}", url);
                         }
 
-                        loader.setClassLoader(HttpClassLoader.getInstance(clURL));
+                        loader.setClassLoader(HttpClassLoader.getInstance(url, getClass().getClassLoader()));
                     }
 
                     try
@@ -122,7 +118,9 @@ public class Window extends Tab implements WindowInterface
 
                     if (result.isPresent())
                     {
-                        Browser.getCredentialsProvider().setCredentials(new AuthScope(location.getHost(), location.getPort()),
+                        URL url = new URL(location);
+
+                        Browser.getCredentialsProvider().setCredentials(new AuthScope(url.getHost(), url.getPort()),
                             new UsernamePasswordCredentials(result.get().getKey(), result.get().getValue()));
                         setLocation(location);
                     }

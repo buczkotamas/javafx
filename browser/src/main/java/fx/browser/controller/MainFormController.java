@@ -1,7 +1,7 @@
 package fx.browser.controller;
 
-import fx.browser.TabClassLoader;
-import fx.browser.WindowInterface;
+import fx.browser.Window;
+import fx.browser.WindowClassLoader;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -58,7 +58,7 @@ public class MainFormController implements Initializable
                     {
                         try
                         {
-                            TabClassLoader tabClassLoader = new TabClassLoader();
+                            WindowClassLoader tabClassLoader = new WindowClassLoader();
                             Class winClass = tabClassLoader.loadClass("fx.browser.Window");
 
                             System.out.println("Window.newInstance()");
@@ -73,17 +73,24 @@ public class MainFormController implements Initializable
                             e.printStackTrace();
                         }
                     }
+                    else
+                    {
+                        txtAddress.setText(getActiveWindow().getLocation().toString());
+                    }
                 }
             });
     }
 
-    @FXML private void go(ActionEvent event)
+    private Window getActiveWindow()
+    {
+        return (Window) tabPane.getSelectionModel().getSelectedItem();
+    }
+
+    @FXML private void setLocation(ActionEvent event)
     {
         try
         {
-            URL url = new URL(txtAddress.getText());
-
-            ((WindowInterface) tabPane.getSelectionModel().getSelectedItem()).setLocation(url);
+            getActiveWindow().setLocation(txtAddress.getText());
         }
         catch (Exception ex)
         {

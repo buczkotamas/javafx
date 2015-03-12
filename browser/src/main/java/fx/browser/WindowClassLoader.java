@@ -11,14 +11,14 @@ import java.util.logging.Logger;
  *
  * @author tbuczko
  */
-public class TabClassLoader extends ClassLoader
+public class WindowClassLoader extends ClassLoader
 {
-    private static final Logger logger = Logger.getLogger(TabClassLoader.class.getName());
-    private final List<String> tabStaticClassNames = Arrays.asList("fx.browser.Window");
+    private static final Logger logger = Logger.getLogger(WindowClassLoader.class.getName());
+    private final List<String> tabStaticClassNames = Arrays.asList("fx.browser.WindowImpl");
 
     @Override public Class loadClass(String name) throws ClassNotFoundException
     {
-        System.out.println("# TabClassLoader.loadClass: " + name);
+        System.out.println("# " + this.toString() + ").loadClass: " + name);
         if (tabStaticClassNames.contains(name))
         {
             try
